@@ -15,10 +15,10 @@ CharacterController:
   m_Radius: 0.5
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.08
+  m_SkinWidth: 0.05
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0.9, z: 0}
---- !u!114 &-2330004218705473051
+--- !u!114 &1656521905169656820
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -27,33 +27,29 @@ MonoBehaviour:
   m_GameObject: {fileID: 6209980206881902358}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c827e1837fb6aca4eb05b0c39acf0774, type: 3}
+  m_Script: {fileID: 11500000, guid: 38e4d973bb43c2f408972934f89d55b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MovementSpeed: 8
-  RotationSpeed: 4
-  _layerMask:
+  _rotationSpeed: 15
+  _moveSpeed: 8
+  _runMultiplier: 2
+  _terrainMask:
     serializedVersion: 2
     m_Bits: 64
---- !u!114 &8857789521913386899
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6209980206881902358}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1c15d5a7c3fb98b41b70a1dff6bfc9a9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  attackPoint: {fileID: 438945534701385229}
-  attackRange: 0.75
-  attackDamge: 40
-  attackRate: 2
-  enemyLayers:
+  _wallMask:
     serializedVersion: 2
     m_Bits: 128
+  _enemyMask:
+    serializedVersion: 2
+    m_Bits: 256
+  attackPoint: {fileID: 438945534701385229}
+  _attackRate: 2
+  _attackDamage: 40
+  _attackRange: 2
+  attackSprites:
+  - {fileID: 21300000, guid: fdaaa50754224e54f8c37b063ad19eba, type: 3}
+  - {fileID: 21300000, guid: 1685b78e6fc66a146837d113474a90a8, type: 3}
+  - {fileID: 21300000, guid: 2f4042facffbde749ad280bf5d9e97d0, type: 3}
 --- !u!1 &8610792898957522284
 GameObject:
   m_ObjectHideFlags: 0
@@ -139,10 +135,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Mutant Prefab
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 4b3556ebec858bd4bbd84cc1b390e4d7, type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 4b3556ebec858bd4bbd84cc1b390e4d7, type: 3}
       propertyPath: m_Controller
       value: 
-      objectReference: {fileID: 9100000, guid: 3003caa9d7c635b489f76e04b5131e14, type: 2}
+      objectReference: {fileID: 9100000, guid: ba36f18d2aca5e94097b1e1f302bd38e, type: 2}
     - target: {fileID: 5866666021909216657, guid: 4b3556ebec858bd4bbd84cc1b390e4d7, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
