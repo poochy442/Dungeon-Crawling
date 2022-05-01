@@ -36,7 +36,7 @@ public class PlayerReadyState : PlayerBaseState
 
     public override void CheckSwitchStates()
 	{
-		if(Ctx.IsAttackPressed){
+		if(Ctx.IsAttackPressed && !Ctx.IsInteractingWithHud){
 			SwitchState(Factory.Attack());
 		}
 	}

@@ -53,7 +53,7 @@ public class PlayerAttackState : PlayerBaseState
 	public override void ExitState()
 	{
 		Ctx.CurrentAttackResetRoutine = Ctx.StartCoroutine(IAttackResetRoutine());
-		if(Ctx.AttackCount == 3){
+		if(Ctx.AttackCount == Ctx.AttackAmount){
 			Ctx.AttackCount = 0;
 		}
 		Ctx.Animator.SetBool(Ctx.IsAttackingHash, false);
@@ -71,7 +71,7 @@ public class PlayerAttackState : PlayerBaseState
     public override void CheckSwitchStates()
 	{
 		bool nextAttack = Time.time > Ctx.NextAttackTime;
-		if (nextAttack && Ctx.IsAttackPressed){
+		if (nextAttack && Ctx.IsAttackPressed && !Ctx.IsInteractingWithHud){
 			BeginAttack();
 		} else if (nextAttack){
 			SwitchState(Factory.Ready());
@@ -79,7 +79,7 @@ public class PlayerAttackState : PlayerBaseState
 	}
 
 	void BeginAttack() {
-		if(Ctx.AttackCount == 3){
+		if(Ctx.AttackCount == Ctx.AttackAmount){
 			Ctx.AttackCount = 1;
 		} else {
 			Ctx.AttackCount += 1;
@@ -93,7 +93,7 @@ public class PlayerAttackState : PlayerBaseState
 		hasDamaged = false;
 
 		// Set attack sprite
-		int i = Ctx.AttackCount >= 3 ? 0 : Ctx.AttackCount;
+		int i = Ctx.AttackCount >= Ctx.AttackAmount ? 0 : Ctx.AttackCount;
 		Ctx.AttackImage.sprite = Ctx.attackSprites[i];
 	}
 
@@ -103,9 +103,9 @@ public class PlayerAttackState : PlayerBaseState
         Collider[] hitEnemies = Physics.OverlapSphere(Ctx.attackPoint.position, Ctx._attackRange, Ctx._enemyMask);
 
         // Damage enemies
-        foreach (Collider enemy in hitEnemies)
-        {
-            enemy.GetComponent<Enemy>().TakeDamage(Ctx._attackDamage);
-        }
+        // foreach (Collider enemy in hitEnemies)
+        // {
+        //     enemy.GetComponent<Enemy>().TakeDamage(Ctx._attackDamage);
+        // }
 	}
 }

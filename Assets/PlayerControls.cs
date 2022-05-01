@@ -49,6 +49,22 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Inventory"",
+                    ""type"": ""Button"",
+                    ""id"": ""e21109f4-d52f-4338-95ec-2b69efae2432"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
+                },
+                {
+                    ""name"": ""Interact"",
+                    ""type"": ""Button"",
+                    ""id"": ""50ea840d-6646-4d68-ac7c-70c823030111"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -227,6 +243,50 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""action"": ""Look"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""375ed803-00a6-4ea0-b98b-ade1f8e484e2"",
+                    ""path"": ""<Keyboard>/i"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KBM"",
+                    ""action"": ""Inventory"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8ae1bac7-ff68-490c-b1ad-de2509469e24"",
+                    ""path"": ""<Gamepad>/select"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller"",
+                    ""action"": ""Inventory"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""34d6129c-e081-4426-9de6-8beb9480a0a2"",
+                    ""path"": ""<Gamepad>/buttonSouth"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller"",
+                    ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""3e3fc386-ab3e-44de-bf15-74cbab32f0a3"",
+                    ""path"": ""<Keyboard>/f"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KBM"",
+                    ""action"": ""Interact"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -267,6 +327,8 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         m_Controls_Look = m_Controls.FindAction("Look", throwIfNotFound: true);
         m_Controls_Attack = m_Controls.FindAction("Attack", throwIfNotFound: true);
         m_Controls_Run = m_Controls.FindAction("Run", throwIfNotFound: true);
+        m_Controls_Inventory = m_Controls.FindAction("Inventory", throwIfNotFound: true);
+        m_Controls_Interact = m_Controls.FindAction("Interact", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -320,6 +382,8 @@ public class @PlayerControls : IInputActionCollection, IDisposable
     private readonly InputAction m_Controls_Look;
     private readonly InputAction m_Controls_Attack;
     private readonly InputAction m_Controls_Run;
+    private readonly InputAction m_Controls_Inventory;
+    private readonly InputAction m_Controls_Interact;
     public struct ControlsActions
     {
         private @PlayerControls m_Wrapper;
@@ -328,6 +392,8 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         public InputAction @Look => m_Wrapper.m_Controls_Look;
         public InputAction @Attack => m_Wrapper.m_Controls_Attack;
         public InputAction @Run => m_Wrapper.m_Controls_Run;
+        public InputAction @Inventory => m_Wrapper.m_Controls_Inventory;
+        public InputAction @Interact => m_Wrapper.m_Controls_Interact;
         public InputActionMap Get() { return m_Wrapper.m_Controls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -349,6 +415,12 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Run.started -= m_Wrapper.m_ControlsActionsCallbackInterface.OnRun;
                 @Run.performed -= m_Wrapper.m_ControlsActionsCallbackInterface.OnRun;
                 @Run.canceled -= m_Wrapper.m_ControlsActionsCallbackInterface.OnRun;
+                @Inventory.started -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInventory;
+                @Inventory.performed -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInventory;
+                @Inventory.canceled -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInventory;
+                @Interact.started -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInteract;
+                @Interact.performed -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInteract;
+                @Interact.canceled -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInteract;
             }
             m_Wrapper.m_ControlsActionsCallbackInterface = instance;
             if (instance != null)
@@ -365,6 +437,12 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Run.started += instance.OnRun;
                 @Run.performed += instance.OnRun;
                 @Run.canceled += instance.OnRun;
+                @Inventory.started += instance.OnInventory;
+                @Inventory.performed += instance.OnInventory;
+                @Inventory.canceled += instance.OnInventory;
+                @Interact.started += instance.OnInteract;
+                @Interact.performed += instance.OnInteract;
+                @Interact.canceled += instance.OnInteract;
             }
         }
     }
@@ -393,5 +471,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         void OnLook(InputAction.CallbackContext context);
         void OnAttack(InputAction.CallbackContext context);
         void OnRun(InputAction.CallbackContext context);
+        void OnInventory(InputAction.CallbackContext context);
+        void OnInteract(InputAction.CallbackContext context);
     }
 }

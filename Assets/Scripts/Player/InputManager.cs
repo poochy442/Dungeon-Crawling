@@ -12,15 +12,26 @@ public enum ControlType{
 
 public class InputManager : MonoBehaviour
 {
+	#region Singleton
+
+	public static InputManager instance;
+
+	#endregion
+
     // Setup variables
 	public ControlType CurrentControl {get; private set;}
+
+	// Movement
 	public bool IsMovementPressed {get; private set;}
 	public Vector2 CurrentMovementInput {get; private set;}
 	public bool IsRunPressed {get; private set;}
 	public bool IsAttackPressed {get; private set;}
 	public bool IsLookPressed {get; private set;}
+	public bool IsInteractPressed {get; private set;}
 	public Vector2 CurrentLookInput {get; private set;}
 
+	// UI
+	public bool isInventoryActive {get; private set;}
 
 	private PlayerControls _playerControls;
 
@@ -29,6 +40,14 @@ public class InputManager : MonoBehaviour
 
 	void Awake()
 	{
+		// Singleton
+		if(instance != null)
+		{
+			Debug.LogWarning("More that one instance of Input Manager!");
+			return;
+		}
+		instance = this;
+
 		_playerControls = new PlayerControls();
 
 		// Setup movement
@@ -47,6 +66,12 @@ public class InputManager : MonoBehaviour
 		_playerControls.Controls.Attack.started += ctx => onAttackStarted(ctx);
 		_playerControls.Controls.Attack.canceled += ctx => onAttackCanceled();
 
+		// Setup interaction
+		_playerControls.Controls.Interact.started += ctx => onInteractStarted(ctx);
+		_playerControls.Controls.Interact.canceled += ctx => onInteractCanceled();
+
+		// Setup UI
+		_playerControls.Controls.Inventory.started += ctx => onInventoryStarted();
 	}
 
 	/* Action handlers */
@@ -107,6 +132,22 @@ public class InputManager : MonoBehaviour
 	}
 	void onAttackCanceled(){
 		IsAttackPressed = false;
+	}
+
+	// Interact handlers
+	void onInteractStarted(InputAction.CallbackContext context){
+		checkDevice(context.action.activeControl.device.name);
+
+		IsInteractPressed = true;
+	}
+
+	void onInteractCanceled(){
+		IsInteractPressed = false;
+	}
+
+	// UI handlers
+	void onInventoryStarted(){
+		isInventoryActive = !isInventoryActive;
 	}
 
 	// Checks device

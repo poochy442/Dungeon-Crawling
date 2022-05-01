@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 7b6be1dbc3824264aa38307cc5f395e5
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - FloorPrefab: {fileID: 2626348986270295611, guid: 2def0c63d994f4647b3533e7ec388759, type: 3}
+  - WallPrefab: {fileID: 6103745985981278151, guid: 1abec0993b507f445b95ca16b2374cba, type: 3}
+  - PillarPrefab: {fileID: 3969255812338197838, guid: a7aba58ef0ee1f4449eea0ee63fa5e38, type: 3}
+  - RoomPrefab: {fileID: 6278818671641634299, guid: 8933a4b9d8e0e40428aeaac355851eab, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

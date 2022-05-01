@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
@@ -19,7 +20,7 @@ public class PlayerStateMachine : MonoBehaviour
     public float _moveSpeed = 8f, _runMultiplier = 2.0f;
 
     // Layer masks used
-    public LayerMask _terrainMask, _wallMask, _enemyMask;
+    public LayerMask _terrainMask, _wallMask, _enemyMask, _hudMask;
 
     // Movement variables
     Vector3 _currentMovement;
@@ -43,6 +44,7 @@ public class PlayerStateMachine : MonoBehaviour
 	// HUD Variables
 	public Sprite[] attackSprites;
 	private Image _attackImage;
+	private bool _isInteractingWithHud;
 
 	// Getters and Setters
 	public PlayerBaseState CurrentState { get { return _currentState; } set { _currentState = value; } }
@@ -67,7 +69,9 @@ public class PlayerStateMachine : MonoBehaviour
 	public float AppliedMovementZ { get { return _appliedMovement.z; } set { _appliedMovement.z = value; }}
 	public float RunMultiplier { get { return _runMultiplier; }}
 	public float NextAttackTime { get { return _nextAttackTime; } set { _nextAttackTime = value; }}
+	public int AttackAmount { get { return _attackDurations.Keys.Count; }}
 	public Image AttackImage {get { return _attackImage; } set { _attackImage = value; }}
+	public bool IsInteractingWithHud { get { return _isInteractingWithHud;}}
 
     void Awake()
     {
@@ -105,15 +109,12 @@ public class PlayerStateMachine : MonoBehaviour
         // Calculate durations
         float firstDuration = 1.1f / _attackRate;
         float secondDuration = 2.667f / _attackRate;
-        float thirdDuration = 5.4f / _attackRate;
 
         _attackDurations.Add(1, firstDuration);
         _attackDurations.Add(2, secondDuration);
-        _attackDurations.Add(3, thirdDuration);
 
 		_attackTimings.Add(1, firstDuration / 5);
 		_attackTimings.Add(2, secondDuration / 4);
-		_attackTimings.Add(3, thirdDuration / 4);
 
 		_attackImage.sprite = attackSprites[0];
     }
@@ -127,6 +128,14 @@ public class PlayerStateMachine : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+		// Check if the user is interacting with the HUD
+		if(_inputManager.CurrentControl == ControlType.KeyboardMouse){
+			if(EventSystem.current.IsPointerOverGameObject())
+				_isInteractingWithHud = true;
+			else
+				_isInteractingWithHud = false;
+		}
+
 		// Run state update logic
 		_currentState.UpdateStates();
 
@@ -137,19 +146,23 @@ public class PlayerStateMachine : MonoBehaviour
 		// Set animation parameters
 		if(_characterController.velocity.magnitude > 0){
 			_animator.SetFloat(_forwardMovementHash,
-				Vector3.Dot(transform.forward, _characterController.velocity.normalized)
-				/ _characterController.velocity.magnitude,
+				Vector3.Dot(transform.forward, _characterController.velocity.normalized),
 				0.075f,
 				Time.deltaTime);
 			_animator.SetFloat(_sideMovementHash, 
-				Vector3.Dot(transform.right, _characterController.velocity.normalized)
-				/ _characterController.velocity.magnitude,
+				Vector3.Dot(transform.right, _characterController.velocity.normalized),
 				0.075f,
 				Time.deltaTime);
 		}
 
 		// Move
         _characterController.SimpleMove(_moveSpeed * _appliedMovement);
+
+		// Handle interaction
+		if(_inputManager.IsInteractPressed && !(PlayerManager._instance._currentTarget == null))
+		{
+			PlayerManager._instance._currentTarget.Interact();
+		}
 
 		// Log current state
 		// Debug.Log("Current state" + _currentState.GetCurrentStatesPrint());
@@ -159,6 +172,8 @@ public class PlayerStateMachine : MonoBehaviour
     void HandleRotation()
     {
 		if(_inputManager.CurrentControl == ControlType.Controller && IsLookPressed){
+			if(CurrentLookInput.magnitude < 0.05f)
+				return;
 			Vector3 positionToLookAt = transform.position + new Vector3(CurrentLookInput.x, 0, CurrentLookInput.y) * 100;
 			positionToLookAt.y = 0;
 
@@ -168,12 +183,12 @@ public class PlayerStateMachine : MonoBehaviour
 			// Look towards the mouse
 			RaycastHit hit;
 			Ray ray = _camera.ScreenPointToRay(Mouse.current.position.ReadValue());
-			if(Physics.Raycast(ray, out hit, Mathf.Infinity, _terrainMask)){
-				Vector3 positionToLookAt = hit.point;
-				positionToLookAt.y = 0;
+			if(Physics.Raycast(ray, out hit, 100f, _terrainMask)){
+				Vector3 direction = (hit.point - transform.position).normalized;
+				direction.y = 0;
 
 				// Create a new rotation based on where the cursor is located
-				Quaternion targetRotation = Quaternion.LookRotation(positionToLookAt);
+				Quaternion targetRotation = Quaternion.LookRotation(direction);
 				// Rotate the character to face the position
 				transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
 			}
