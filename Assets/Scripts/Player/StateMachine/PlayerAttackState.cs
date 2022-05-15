@@ -37,6 +37,7 @@ public class PlayerAttackState : PlayerBaseState
 
 	public override void UpdateState()
 	{
+		Debug.Log(GetCurrentStatesPrint());
 		if(!hasDamaged && Time.time > _damageTime){
 			HandleAttack();
 			hasDamaged = true;
@@ -76,6 +77,7 @@ public class PlayerAttackState : PlayerBaseState
 		if (nextAttack && Ctx.IsAttackPressed && !Ctx.IsInteractingWithHud){
 			BeginAttack();
 		} else if (nextAttack){
+			Ctx.IsAttacking = false;
 			SwitchState(Factory.Ready());
 		}
 	}
@@ -89,6 +91,7 @@ public class PlayerAttackState : PlayerBaseState
 		Ctx.Animator.SetBool(Ctx.IsAttackingHash, true);
         Ctx.Animator.SetInteger(Ctx.AttackCountHash, Ctx.AttackCount);
 		Ctx.NextAttackTime = Time.time + Ctx._attackDurations[Ctx.AttackCount];
+		Ctx.IsAttacking = true;
 
 		// Setup damage timer
 		_damageTime = Time.time + Ctx._attackTimings[Ctx.AttackCount];
@@ -101,13 +104,12 @@ public class PlayerAttackState : PlayerBaseState
 
 	void HandleAttack() {
 		// Detect enemies in range of attack
-        // TODO: Delay detection for animation trigger
         Collider[] hitEnemies = Physics.OverlapSphere(Ctx.attackPoint.position, Ctx._attackRange, Ctx._enemyMask);
 
         // Damage enemies
-        // foreach (Collider enemy in hitEnemies)
-        // {
-        //     enemy.GetComponent<Enemy>().TakeDamage(Ctx._attackDamage);
-        // }
+        foreach (Collider enemy in hitEnemies)
+        {
+            enemy.GetComponent<Enemy>().TakeDamage(PlayerManager.instance.playerStats.damage.GetValue());
+        }
 	}
 }

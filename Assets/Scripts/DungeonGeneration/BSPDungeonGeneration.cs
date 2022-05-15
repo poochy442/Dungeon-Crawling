@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.AI.Navigation;
 
 /* Created with inspiration from the article: https://varav.in/archive/dungeon/ about Dungeon Generation using Binary Space Partitioning */
 public enum Direction
@@ -13,6 +14,7 @@ public struct Room
 	public Rect Rect {get; set;}
 	public GameObject RoomObject {get; set;}
 	public Dictionary<Direction, List<Room>> Connections {get; set;}
+	public List<Room> ConnectedTo {get; set;}
 	public Dictionary<Direction, GameObject> CorridorStarts {get; set;}
 	public Room(int id, Rect rect, GameObject roomObject, Dictionary<Direction, GameObject> corridorStarts)
 	{
@@ -20,10 +22,23 @@ public struct Room
 		Rect = rect;
 		RoomObject = roomObject;
 		Connections = new Dictionary<Direction, List<Room>>();
+		ConnectedTo = new List<Room>();
 		CorridorStarts = corridorStarts;
 	}
+	public void AddConnection(Direction direction, Room room)
+	{
+		if(Connections.ContainsKey(direction))
+		{
+			Connections[direction].Add(room);
+			ConnectedTo.Add(room);
+		}
+		else
+		{
+			Connections.Add(direction, new List<Room>(){room});
+			ConnectedTo.Add(room);
+		}
+	}
 }
-
 public struct Corridor
 {
 	public Room StartRoom {get; set;}
@@ -40,6 +55,7 @@ public struct Corridor
 public class BSPDungeonGeneration : MonoBehaviour
 {
 	public static BSPDungeonGeneration instance;
+
 	// Input
 	public float minRoomLength = 8, maxRoomLength = 20, roomSpacing = 4;
 	public int maxRoomAmount = 8;
@@ -52,6 +68,8 @@ public class BSPDungeonGeneration : MonoBehaviour
 	List<Corridor> _corridors;
 	Room _playerSpawn;
 	GameObject _dungeon;
+	DijkstraMap _dijkstraMap;
+	NavMeshSurface surface;
 
 	// Getter / Setter
 	public Vector3 PlayerSpawn { get; private set; }
@@ -60,6 +78,7 @@ public class BSPDungeonGeneration : MonoBehaviour
 		r.Remove(_playerSpawn);
 		return r;
 	}}
+	public DijkstraMap DijkstraMap { get { return _dijkstraMap; }}
 
     // Start is called before the first frame update
     public void Awake()
@@ -71,7 +90,7 @@ public class BSPDungeonGeneration : MonoBehaviour
 		float generationWidth = Mathf.Cos(angleBetween) * maxDiagonal.magnitude / 4;
 		float generationHeight = Mathf.Sin(angleBetween) * maxDiagonal.magnitude / 4;
 
-		Debug.Log("Generating dungeon with size: " + generationWidth + " x " + generationHeight);
+		Debug.Log($"Generating dungeon with size: {generationWidth} x {generationHeight}");
 
 		_dungeon = GameObject.Instantiate(emptyPrefab);
 		_dungeon.name = "Dungeon";
@@ -80,8 +99,21 @@ public class BSPDungeonGeneration : MonoBehaviour
 		_rooms = CreateRooms();
 		_corridors = CreateCorridors();
 
+		_dijkstraMap = new DijkstraMap(_playerSpawn, _rooms);
+
 		_dungeon.transform.localScale = new Vector3(4, 4, 4);
 		PlayerSpawn = _playerSpawn.RoomObject.transform.position;
+
+		GameObject background = GameObject.CreatePrimitive(PrimitiveType.Plane);
+		background.transform.localScale = new Vector3(1000, 1, 1000);
+		MeshRenderer meshRenderer = background.GetComponent<MeshRenderer>();
+		meshRenderer.material.color = new Color(0, 0, 0, 1);
+		background.layer = 11; // Background Layer
+
+		surface = _dungeon.AddComponent<NavMeshSurface>();
+		surface.layerMask = LayerMask.GetMask("Terrain", "Wall");
+		gameObject.transform.position = PlayerSpawn;
+		surface.BuildNavMesh();
     }
 
 	
@@ -174,7 +206,6 @@ public class BSPDungeonGeneration : MonoBehaviour
 			int y = (int) Mathf.Round(chosenRect.center.y);
 			Dictionary<Direction, GameObject> corridorStarts;
 			GameObject roomObject = CreateRoom(x, y, w, h, i, out corridorStarts);
-			Debug.Log("Created new room, Corridor starts: " + corridorStarts.Keys.Count);
 			Room newRoom = new Room(i, new Rect(x - (w / 2), y - (h / 2), w, h), roomObject, corridorStarts);
 			r.Add(newRoom);
 			roomAmount++;
@@ -216,10 +247,7 @@ public class BSPDungeonGeneration : MonoBehaviour
 			w1.transform.position += new Vector3(-0.5f, 0, 0.5f);
 			if(!corridorStarts.ContainsKey(Direction.West))
 			{
-				// Debug.Log("Checking corridor start:");
-				// Debug.Log(rand1 + " < " + (i + height / 2f) / height);
 				if(rand1 < (i + height / 2f) / height){
-					// Debug.Log("Found corridor start: " + (i + height / 2));
 					corridorStarts.Add(Direction.West, w1);
 				}
 			}
@@ -229,10 +257,7 @@ public class BSPDungeonGeneration : MonoBehaviour
 			w2.transform.position += new Vector3(-0.5f, 0, 0.5f);
 			if(!corridorStarts.ContainsKey(Direction.East))
 			{
-				// Debug.Log("Checking corridor start:");
-				// Debug.Log(rand2 + " < " + (i + height / 2f) / height);
 				if(rand2 < (i + height / 2f) / height){
-					// Debug.Log("Found corridor start: " + (i + height / 2));
 					corridorStarts.Add(Direction.East, w2);
 				}
 			}
@@ -244,10 +269,7 @@ public class BSPDungeonGeneration : MonoBehaviour
 			GameObject w1 = GameObject.Instantiate(ChooseInstance(wallPrefabs), location + new Vector3(i, 0, - height / 2), zQuat, room.transform);
 			if(!corridorStarts.ContainsKey(Direction.South))
 			{
-				// Debug.Log("Checking corridor start:");
-				// Debug.Log(rand3 + " < " + (i + width / 2f) / width);
 				if(rand3 < (i + width / 2f) / width){
-					// Debug.Log("Found corridor start: " + (i + width / 2));
 					corridorStarts.Add(Direction.South, w1);
 				}
 			}
@@ -256,10 +278,7 @@ public class BSPDungeonGeneration : MonoBehaviour
 			w2.transform.Rotate(new Vector3(0, 1, 0), 180);
 			if(!corridorStarts.ContainsKey(Direction.North))
 			{
-				// Debug.Log("Checking corridor start:");
-				// Debug.Log(rand4 + " < " + (i + width / 2f) / width);
 				if(rand4 < (i + width / 2f) / width){
-					// Debug.Log("Found corridor start: " + (i + width / 2));
 					corridorStarts.Add(Direction.North, w2);
 				}
 			}
@@ -365,15 +384,8 @@ public class BSPDungeonGeneration : MonoBehaviour
 			List<Direction> connectionDirections = FindCorridorDirection(connection, nearest), nearestDirections = FindCorridorDirection(nearest, connection);
 			Direction connectionDirection = connectionDirections[Random.Range(0, connectionDirections.Count)], nearestDirection = nearestDirections[Random.Range(0, nearestDirections.Count)];
 			
-			if(!connection.Connections.ContainsKey(connectionDirection))
-				connection.Connections.Add(connectionDirection, new List<Room>(){nearest});
-			else
-				connection.Connections[connectionDirection].Add(nearest);
-			
-			if(!nearest.Connections.ContainsKey(nearestDirection))
-				nearest.Connections.Add(nearestDirection, new List<Room>(){connection});
-			else
-				nearest.Connections[nearestDirection].Add(connection);
+			connection.AddConnection(connectionDirection, nearest);
+			nearest.AddConnection(nearestDirection, connection);
 
 			remaining.Remove(nearest);
 			connected.Add(nearest);

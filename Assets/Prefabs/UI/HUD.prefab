@@ -188,6 +188,10 @@ PrefabInstance:
       propertyPath: m_Alpha
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 446662076370227099, guid: 6aa6d7ae2b0fef044ae3dc388aab0825, type: 3}
+      propertyPath: m_BlocksRaycasts
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3880871390134841443, guid: 6aa6d7ae2b0fef044ae3dc388aab0825, type: 3}
       propertyPath: m_Name
       value: LoadingScreen

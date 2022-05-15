@@ -171,7 +171,6 @@ public class InputManager : MonoBehaviour
 	}
 	void OnDisable()
 	{
-		if(_playerControls != null)
-			_playerControls.Disable();
+		_playerControls.Disable();
 	}
 }

@@ -23,7 +23,7 @@ public class PlayerStateMachine : MonoBehaviour
     public float _moveSpeed = 8f, _runMultiplier = 2.0f;
 
     // Layer masks used
-    public LayerMask _terrainMask, _wallMask, _enemyMask, _hudMask;
+    public LayerMask _backgroundMask, _wallMask, _enemyMask, _hudMask;
 
     // Movement variables
     Vector3 _currentMovement;
@@ -194,7 +194,7 @@ public class PlayerStateMachine : MonoBehaviour
 			// Look towards the mouse
 			RaycastHit hit;
 			Ray ray = _camera.ScreenPointToRay(Mouse.current.position.ReadValue());
-			if(Physics.Raycast(ray, out hit, 100f, _terrainMask)){
+			if(Physics.Raycast(ray, out hit, 100f, _backgroundMask)){
 				Vector3 direction = (hit.point - transform.position).normalized;
 				direction.y = 0;
 
