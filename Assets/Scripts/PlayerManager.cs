@@ -7,28 +7,34 @@ public class PlayerManager : MonoBehaviour
 {
     # region Singleton
 
-	public static PlayerManager _instance;
+	public static PlayerManager instance { get; private set; }
 
 	void Awake ()
 	{
-		_instance = this;
+		if(instance == null)
+			instance = this;
 	}
 
 	# endregion
 
-	public LayerMask _lootMask, _playerMask, _enemyMask;
-	public GameObject _player;
-	public Interactable _currentTarget;
-	public PlayerStats _playerStats;
+	public LayerMask lootMask, playerMask, enemyMask;
+	public GameObject player;
+	public Interactable currentTarget;
+	public PlayerStats playerStats;
 
-	// TODO: Change to stat
 	float _pickupRadius = 3f;
 	IEnumerator _lootTextCoroutine;
+
+	void Start()
+	{
+		player = GameObject.FindGameObjectWithTag("Player");
+		playerStats = player.GetComponent<PlayerStats>();
+	}
 
 	void Update ()
 	{
 		// Check for loot in the area and allow the player to pick it up
-		Collider[] hitColliders = Physics.OverlapSphere(_player.transform.position, _pickupRadius, _lootMask);
+		Collider[] hitColliders = Physics.OverlapSphere(player.transform.position, _pickupRadius, lootMask);
 		GameObject closest = null;
 		foreach(Collider hit in hitColliders)
 		{
@@ -37,17 +43,27 @@ public class PlayerManager : MonoBehaviour
 
 		if(closest != null)
 		{
-			_currentTarget = closest.GetComponent<ItemPickup>();
+			currentTarget = closest.GetComponent<ItemPickup>();
 
 			// TODO: Change to loot name
 			Text text = closest.GetComponentInChildren<Text>();
-			text.text = _currentTarget.name;
+			text.text = currentTarget.name;
 
 			if(_lootTextCoroutine != null) StopCoroutine(_lootTextCoroutine);
 
 			_lootTextCoroutine = ResetLootText(text, 1f);
 			StartCoroutine(_lootTextCoroutine);
 		}
+	}
+
+	public void MovePlayer(Vector3 location)
+	{
+		if(player == null)
+		{
+			player = GameObject.FindGameObjectWithTag("Player");
+			playerStats = player.GetComponent<PlayerStats>();
+		}
+		player.transform.position = location;
 	}
 
 	IEnumerator ResetLootText(Text text, float waitTime)

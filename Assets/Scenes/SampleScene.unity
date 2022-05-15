@@ -1350,7 +1350,6 @@ MonoBehaviour:
   _enemyMask:
     serializedVersion: 2
     m_Bits: 256
-  _player: {fileID: 1956103702}
   _currentTarget: {fileID: 0}
   _playerStats: {fileID: 0}
 --- !u!4 &886066635
@@ -3531,11 +3530,6 @@ Light:
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
---- !u!1 &1956103702 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6209980206881902358, guid: 0d153c8eb741213458aeb39ada07a024, type: 3}
-  m_PrefabInstance: {fileID: 1203844098}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &2047611292
 PrefabInstance:
   m_ObjectHideFlags: 0

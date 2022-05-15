@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+// Player action state - ready
+// Base action state where player is ready to perform a new action
 public class PlayerReadyState : PlayerBaseState
 {
     public PlayerReadyState(PlayerStateMachine currentContext, PlayerStateFactory playerStateFactory) : base(currentContext, playerStateFactory) {

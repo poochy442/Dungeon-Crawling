@@ -39,18 +39,33 @@ public struct Corridor
 
 public class BSPDungeonGeneration : MonoBehaviour
 {
-	public float minRoomLength = 5f, maxRoomLength = 20f, roomSpacing = 2f;
+	public static BSPDungeonGeneration instance;
+	// Input
+	public float minRoomLength = 8, maxRoomLength = 20, roomSpacing = 4;
 	public int maxRoomAmount = 8;
 	public List<GameObject> floorPrefabs, wallPrefabs, pillarPrefabs;
-	public GameObject emptyPrefab;	
+	public GameObject emptyPrefab;
 
+	// Internal variables
 	List<Rect> _partitions;
 	List<Room> _rooms;
 	List<Corridor> _corridors;
+	Room _playerSpawn;
+	GameObject _dungeon;
+
+	// Getter / Setter
+	public Vector3 PlayerSpawn { get; private set; }
+	public List<Room> SpawnableRooms { get {
+		List<Room> r = _rooms;
+		r.Remove(_playerSpawn);
+		return r;
+	}}
 
     // Start is called before the first frame update
-    void Start()
+    public void Awake()
     {
+		instance = this;
+		
 		Vector2 maxDiagonal = new Vector2(maxRoomLength + roomSpacing + Random.Range(0, 10), maxRoomLength + roomSpacing + Random.Range(0, 10)) * maxRoomAmount;
 		float angleBetween = Vector2.Angle(Vector2.right, maxDiagonal) * (Mathf.PI / 180);
 		float generationWidth = Mathf.Cos(angleBetween) * maxDiagonal.magnitude / 4;
@@ -58,9 +73,15 @@ public class BSPDungeonGeneration : MonoBehaviour
 
 		Debug.Log("Generating dungeon with size: " + generationWidth + " x " + generationHeight);
 
+		_dungeon = GameObject.Instantiate(emptyPrefab);
+		_dungeon.name = "Dungeon";
+
         _partitions = BinarySpacePartition(generationWidth, generationHeight);
 		_rooms = CreateRooms();
 		_corridors = CreateCorridors();
+
+		_dungeon.transform.localScale = new Vector3(4, 4, 4);
+		PlayerSpawn = _playerSpawn.RoomObject.transform.position;
     }
 
 	
@@ -126,6 +147,7 @@ public class BSPDungeonGeneration : MonoBehaviour
 	{
 		List<Room> r = new List<Room>();
 		int roomAmount = 0;
+		bool playerSpawnSet = false;
 		
 		List<int> availableRooms = new List<int>();
 		for(int i = 0; i < _partitions.Count; i++)
@@ -152,9 +174,15 @@ public class BSPDungeonGeneration : MonoBehaviour
 			int y = (int) Mathf.Round(chosenRect.center.y);
 			Dictionary<Direction, GameObject> corridorStarts;
 			GameObject roomObject = CreateRoom(x, y, w, h, i, out corridorStarts);
+			Debug.Log("Created new room, Corridor starts: " + corridorStarts.Keys.Count);
 			Room newRoom = new Room(i, new Rect(x - (w / 2), y - (h / 2), w, h), roomObject, corridorStarts);
 			r.Add(newRoom);
 			roomAmount++;
+
+			if(!playerSpawnSet)
+			{
+				_playerSpawn = newRoom;
+			}
 		}
 		return r;
 	}
@@ -165,7 +193,7 @@ public class BSPDungeonGeneration : MonoBehaviour
 
 		// Parent object
 		Vector3 location = new Vector3(xPosition, 0, yPosition);
-		GameObject room = GameObject.Instantiate(emptyPrefab, location, Quaternion.identity);
+		GameObject room = GameObject.Instantiate(emptyPrefab, location, Quaternion.identity, _dungeon.transform);
 		room.name = "Room " + id;
 
 		// Floors
@@ -188,7 +216,10 @@ public class BSPDungeonGeneration : MonoBehaviour
 			w1.transform.position += new Vector3(-0.5f, 0, 0.5f);
 			if(!corridorStarts.ContainsKey(Direction.West))
 			{
-				if(rand1 < (float) (i + height / 2) / height){
+				// Debug.Log("Checking corridor start:");
+				// Debug.Log(rand1 + " < " + (i + height / 2f) / height);
+				if(rand1 < (i + height / 2f) / height){
+					// Debug.Log("Found corridor start: " + (i + height / 2));
 					corridorStarts.Add(Direction.West, w1);
 				}
 			}
@@ -198,7 +229,10 @@ public class BSPDungeonGeneration : MonoBehaviour
 			w2.transform.position += new Vector3(-0.5f, 0, 0.5f);
 			if(!corridorStarts.ContainsKey(Direction.East))
 			{
-				if(rand2 < (float) (i + height / 2) / height){
+				// Debug.Log("Checking corridor start:");
+				// Debug.Log(rand2 + " < " + (i + height / 2f) / height);
+				if(rand2 < (i + height / 2f) / height){
+					// Debug.Log("Found corridor start: " + (i + height / 2));
 					corridorStarts.Add(Direction.East, w2);
 				}
 			}
@@ -210,7 +244,10 @@ public class BSPDungeonGeneration : MonoBehaviour
 			GameObject w1 = GameObject.Instantiate(ChooseInstance(wallPrefabs), location + new Vector3(i, 0, - height / 2), zQuat, room.transform);
 			if(!corridorStarts.ContainsKey(Direction.South))
 			{
-				if(rand3 < (float) (i + width / 2) / width){
+				// Debug.Log("Checking corridor start:");
+				// Debug.Log(rand3 + " < " + (i + width / 2f) / width);
+				if(rand3 < (i + width / 2f) / width){
+					// Debug.Log("Found corridor start: " + (i + width / 2));
 					corridorStarts.Add(Direction.South, w1);
 				}
 			}
@@ -219,7 +256,10 @@ public class BSPDungeonGeneration : MonoBehaviour
 			w2.transform.Rotate(new Vector3(0, 1, 0), 180);
 			if(!corridorStarts.ContainsKey(Direction.North))
 			{
-				if(rand4 < (float) (i + width / 2) / width){
+				// Debug.Log("Checking corridor start:");
+				// Debug.Log(rand4 + " < " + (i + width / 2f) / width);
+				if(rand4 < (i + width / 2f) / width){
+					// Debug.Log("Found corridor start: " + (i + width / 2));
 					corridorStarts.Add(Direction.North, w2);
 				}
 			}
@@ -228,19 +268,19 @@ public class BSPDungeonGeneration : MonoBehaviour
 		// Pillar
 		GameObject p1 = GameObject.Instantiate(ChooseInstance(pillarPrefabs), location + new Vector3(- width / 2, 0, - height / 2), Quaternion.identity, room.transform);
 		p1.transform.position += new Vector3(-0.5f, 1f, 0); // Correction
-		p1.transform.position += new Vector3(0.25f, 0, 0.25f); // Placement
+		p1.transform.position += new Vector3(0.1f, 0, 0.1f); // Placement
 		p1.transform.rotation  = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));
 		GameObject p2 = GameObject.Instantiate(ChooseInstance(pillarPrefabs), location + new Vector3(width / 2, 0, - height / 2), Quaternion.identity, room.transform);
 		p2.transform.position += new Vector3(-0.5f, 1f, 0); // Correction
-		p2.transform.position += new Vector3(-0.25f, 0, 0.25f); // Placement
+		p2.transform.position += new Vector3(-0.1f, 0, 0.1f); // Placement
 		p2.transform.rotation  = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));
 		GameObject p3 = GameObject.Instantiate(ChooseInstance(pillarPrefabs), location + new Vector3(- width / 2, 0, height / 2), Quaternion.identity, room.transform);
 		p3.transform.position += new Vector3(-0.5f, 1f, 0); // Correction
-		p3.transform.position += new Vector3(0.25f, 0, -0.25f); // Placement
+		p3.transform.position += new Vector3(0.1f, 0, -0.1f); // Placement
 		p3.transform.rotation  = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));
 		GameObject p4 = GameObject.Instantiate(ChooseInstance(pillarPrefabs), location + new Vector3(width / 2, 0, height / 2), Quaternion.identity, room.transform);
 		p4.transform.position += new Vector3(-0.5f, 1f, 0); // Correction
-		p4.transform.position += new Vector3(-0.25f, 0, -0.25f); // Placement
+		p4.transform.position += new Vector3(-0.1f, 0, -0.1f); // Placement
 		p4.transform.rotation  = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));
 
 		return room;
@@ -312,7 +352,7 @@ public class BSPDungeonGeneration : MonoBehaviour
 	// Creates the links between the rooms and then generates the Gameobjects
 	List<Corridor> CreateCorridors()
 	{
-		GameObject corridorsObject = GameObject.Instantiate(emptyPrefab);
+		GameObject corridorsObject = GameObject.Instantiate(emptyPrefab, _dungeon.transform);
 		corridorsObject.name = "Corridors";
 
 		List<Corridor> corridors = new List<Corridor>();
@@ -365,7 +405,6 @@ public class BSPDungeonGeneration : MonoBehaviour
 							}
 						}
 
-						Debug.Log(r1.Id + " -> " + r2.Id + " is created: " + alreadyCreated);
 						if(!alreadyCreated)
 						{
 							GameObject newCorridor = CreateCorridor(r1, r2, corridorTileLocations, roomTileLocations, corridorsObject);
@@ -387,28 +426,33 @@ public class BSPDungeonGeneration : MonoBehaviour
 		foreach(Vector3 tileLocation in corridorTileLocations)
 		{
 			// Walls
-			if(!corridorTileLocations.Contains(tileLocation + new Vector3(1, 0, 0)) && !roomTileLocations.Contains(tileLocation + new Vector3(1, 0, 0))) // E
+			if(!corridorTileLocations.Contains(tileLocation + new Vector3(1, 0, 0)) && !roomTileLocations.Contains(tileLocation + new Vector3(1, 0, 0))
+				&& !roomTileLocations.Contains(tileLocation)) // E
 			{
 				GameObject w = GameObject.Instantiate(ChooseInstance(wallPrefabs), tileLocation + new Vector3(0.5f, 0, 0), xQuat, walls.transform);
 				w.transform.Rotate(new Vector3(0, 1, 0), 180);
 			}
-			if(!corridorTileLocations.Contains(tileLocation + new Vector3(-1, 0, 0)) && !roomTileLocations.Contains(tileLocation + new Vector3(-1, 0, 0))) // W
+			if(!corridorTileLocations.Contains(tileLocation + new Vector3(-1, 0, 0)) && !roomTileLocations.Contains(tileLocation + new Vector3(-1, 0, 0))
+				&& !roomTileLocations.Contains(tileLocation)) // W
 			{
 				GameObject w = GameObject.Instantiate(ChooseInstance(wallPrefabs), tileLocation + new Vector3(-0.5f, 0, 0), xQuat, walls.transform);
 			}
-			if(!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, 1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, 1))) // N
+			if(!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, 1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, 1))
+				&& !roomTileLocations.Contains(tileLocation)) // N
 			{
 				GameObject w = GameObject.Instantiate(ChooseInstance(wallPrefabs), tileLocation + new Vector3(0, 0, 0.5f), zQuat, walls.transform);
 				w.transform.Rotate(new Vector3(0, 1, 0), 180);
 			}
-			if(!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, -1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, -1))) // S
+			if(!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, -1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, -1))
+				&& !roomTileLocations.Contains(tileLocation))
 			{
 				GameObject w = GameObject.Instantiate(ChooseInstance(wallPrefabs), tileLocation + new Vector3(0, 0, -0.5f), zQuat, walls.transform);
 			}
 
 			// Pillars
 			if(!corridorTileLocations.Contains(tileLocation + new Vector3(1, 0, 0)) && !roomTileLocations.Contains(tileLocation + new Vector3(1, 0, 0)) &&
-				!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, 1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, 1))) // NE
+				!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, 1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, 1))
+				&& !roomTileLocations.Contains(tileLocation)) // NE
 			{
 				GameObject p1 = GameObject.Instantiate(ChooseInstance(pillarPrefabs), tileLocation + new Vector3(0.5f, 1, 0.5f), Quaternion.identity, walls.transform);
 				p1.transform.rotation  = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));
@@ -416,7 +460,8 @@ public class BSPDungeonGeneration : MonoBehaviour
 				p2.transform.rotation  = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));
 			}
 			if(!corridorTileLocations.Contains(tileLocation + new Vector3(1, 0, 0)) && !roomTileLocations.Contains(tileLocation + new Vector3(1, 0, 0)) &&
-				!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, -1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, -1))) // NW
+				!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, -1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, -1))
+				&& !roomTileLocations.Contains(tileLocation)) // NW
 			{
 				GameObject p1 = GameObject.Instantiate(ChooseInstance(pillarPrefabs), tileLocation + new Vector3(0.5f, 1, -0.5f), Quaternion.identity, walls.transform);
 				p1.transform.rotation  = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));
@@ -424,7 +469,8 @@ public class BSPDungeonGeneration : MonoBehaviour
 				p2.transform.rotation  = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));
 			}
 			if(!corridorTileLocations.Contains(tileLocation + new Vector3(-1, 0, 0)) && !roomTileLocations.Contains(tileLocation + new Vector3(-1, 0, 0)) &&
-				!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, 1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, 1))) // SE
+				!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, 1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, 1))
+				&& !roomTileLocations.Contains(tileLocation)) // SE
 			{
 				GameObject p1 = GameObject.Instantiate(ChooseInstance(pillarPrefabs), tileLocation + new Vector3(-0.5f, 1, 0.5f), Quaternion.identity, walls.transform);
 				p1.transform.rotation  = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));
@@ -432,7 +478,8 @@ public class BSPDungeonGeneration : MonoBehaviour
 				p2.transform.rotation  = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));
 			}
 			if(!corridorTileLocations.Contains(tileLocation + new Vector3(-1, 0, 0)) && !roomTileLocations.Contains(tileLocation + new Vector3(-1, 0, 0)) &&
-				!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, -1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, -1))) // SW
+				!corridorTileLocations.Contains(tileLocation + new Vector3(0, 0, -1)) && !roomTileLocations.Contains(tileLocation + new Vector3(0, 0, -1))
+				&& !roomTileLocations.Contains(tileLocation)) // SW
 			{
 				GameObject p1 = GameObject.Instantiate(ChooseInstance(pillarPrefabs), tileLocation + new Vector3(-0.5f, 1, -0.5f), Quaternion.identity, walls.transform);
 				p1.transform.rotation  = Quaternion.AngleAxis(90, new Vector3(1, 0, 0));

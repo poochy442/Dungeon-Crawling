@@ -21,6 +21,15 @@ public class Stat
 		return finalValue;
 	}
 
+	public float GetBaseValue()
+	{
+		return baseValue;
+	}
+	public void SetBaseValue(float value)
+	{
+		baseValue = value;
+	}
+
 	public void AddModifier(float modifier)
 	{
 		if(modifier != 0)

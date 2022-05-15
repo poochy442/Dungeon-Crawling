@@ -5,6 +5,9 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
+// Main state machine.
+// Handles base logic as well as storage of variables
+// Manages and handles state logic
 public class PlayerStateMachine : MonoBehaviour
 {
     // Declare Reference variables
@@ -36,10 +39,12 @@ public class PlayerStateMachine : MonoBehaviour
 	public Dictionary<int, float> _attackTimings = new Dictionary<int, float>();
     public Coroutine currentAttackResetRoutine = null;
 
+	// Spell variables
+
+
     // State variables
     PlayerBaseState _currentState;
     PlayerStateFactory _states;
-	InputManager _inputManager;
 
 	// HUD Variables
 	public Sprite[] attackSprites;
@@ -50,12 +55,12 @@ public class PlayerStateMachine : MonoBehaviour
 	public PlayerBaseState CurrentState { get { return _currentState; } set { _currentState = value; } }
 	public Animator Animator { get { return _animator; } set { _animator = value; }}
 	public Coroutine CurrentAttackResetRoutine { get { return currentAttackResetRoutine; } set { currentAttackResetRoutine = value; }}
-	public Vector2 CurrentMovementInput { get { return _inputManager.CurrentMovementInput; }}
-	public Vector2 CurrentLookInput { get { return _inputManager.CurrentLookInput; }}
-	public bool IsMovementPressed { get { return _inputManager.IsMovementPressed; }}
-	public bool IsLookPressed { get { return _inputManager.IsLookPressed; }}
-	public bool IsRunPressed { get { return _inputManager.IsRunPressed; }}
-	public bool IsAttackPressed { get { return _inputManager.IsAttackPressed; }}
+	public Vector2 CurrentMovementInput { get { return InputManager.instance ? InputManager.instance.CurrentMovementInput : Vector2.zero; }}
+	public Vector2 CurrentLookInput { get { return InputManager.instance ? InputManager.instance.CurrentLookInput : Vector2.zero; }}
+	public bool IsMovementPressed { get { return InputManager.instance ? InputManager.instance.IsMovementPressed : false; }}
+	public bool IsLookPressed { get { return InputManager.instance ? InputManager.instance.IsLookPressed : false; }}
+	public bool IsRunPressed { get { return InputManager.instance ? InputManager.instance.IsRunPressed : false; }}
+	public bool IsAttackPressed { get { return InputManager.instance ? InputManager.instance.IsAttackPressed : false; }}
 	public bool IsAttacking {get { return _isAttacking; } set { _isAttacking = value; }}
 	public int AttackCount { get { return _attackCount; } set { _attackCount = value; }}
 	public int AttackRateHash {get { return _attackRateHash; }}
@@ -75,9 +80,6 @@ public class PlayerStateMachine : MonoBehaviour
 
     void Awake()
     {
-		// Add input manager
-		_inputManager = gameObject.AddComponent<InputManager>();
-
         // Get Reference variables
         _characterController = GetComponent<CharacterController>();
         _animator = GetComponent<Animator>();
@@ -101,6 +103,7 @@ public class PlayerStateMachine : MonoBehaviour
 		_attackRateHash = Animator.StringToHash("AttackRate");
 
         SetupAttack();
+		SetupSpells();
     }
 
     // Initialize attack variables
@@ -119,17 +122,28 @@ public class PlayerStateMachine : MonoBehaviour
 		_attackImage.sprite = attackSprites[0];
     }
 
+	// Initialize spell variables
+	void SetupSpells()
+	{
+
+	}
+
     // Start is called before the first frame update
     void Start()
     {
-        
+		if(BSPDungeonGeneration.instance != null)
+		{
+			_characterController.enabled = false;
+			PlayerManager.instance.MovePlayer(BSPDungeonGeneration.instance.PlayerSpawn);
+			_characterController.enabled = true;
+		}
     }
 
     // Update is called once per frame
     void Update()
     {
 		// Check if the user is interacting with the HUD
-		if(_inputManager.CurrentControl == ControlType.KeyboardMouse){
+		if(InputManager.instance.CurrentControl == ControlType.KeyboardMouse){
 			if(EventSystem.current.IsPointerOverGameObject())
 				_isInteractingWithHud = true;
 			else
@@ -159,19 +173,16 @@ public class PlayerStateMachine : MonoBehaviour
         _characterController.SimpleMove(_moveSpeed * _appliedMovement);
 
 		// Handle interaction
-		if(_inputManager.IsInteractPressed && !(PlayerManager._instance._currentTarget == null))
+		if(InputManager.instance.IsInteractPressed && !(PlayerManager.instance.currentTarget == null))
 		{
-			PlayerManager._instance._currentTarget.Interact();
+			PlayerManager.instance.currentTarget.Interact();
 		}
-
-		// Log current state
-		// Debug.Log("Current state" + _currentState.GetCurrentStatesPrint());
     }
 
 	// Handles the rotation of the character
     void HandleRotation()
     {
-		if(_inputManager.CurrentControl == ControlType.Controller && IsLookPressed){
+		if(InputManager.instance.CurrentControl == ControlType.Controller && IsLookPressed){
 			if(CurrentLookInput.magnitude < 0.05f)
 				return;
 			Vector3 positionToLookAt = transform.position + new Vector3(CurrentLookInput.x, 0, CurrentLookInput.y) * 100;
@@ -179,7 +190,7 @@ public class PlayerStateMachine : MonoBehaviour
 
 			Quaternion targetRotation = Quaternion.LookRotation(positionToLookAt);
 			transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
-		} else if(_inputManager.CurrentControl == ControlType.KeyboardMouse) {
+		} else if(InputManager.instance.CurrentControl == ControlType.KeyboardMouse) {
 			// Look towards the mouse
 			RaycastHit hit;
 			Ray ray = _camera.ScreenPointToRay(Mouse.current.position.ReadValue());

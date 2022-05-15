@@ -1,3 +1,4 @@
+// Abstract state to make sure all states implement the required logic
 public abstract class PlayerBaseState
 {
 	private bool _isRootState = false;

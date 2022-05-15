@@ -10,6 +10,7 @@ public enum ControlType{
 	Controller
 }
 
+// Handles listening to player input
 public class InputManager : MonoBehaviour
 {
 	#region Singleton
@@ -170,6 +171,7 @@ public class InputManager : MonoBehaviour
 	}
 	void OnDisable()
 	{
-		_playerControls.Disable();
+		if(_playerControls != null)
+			_playerControls.Disable();
 	}
 }

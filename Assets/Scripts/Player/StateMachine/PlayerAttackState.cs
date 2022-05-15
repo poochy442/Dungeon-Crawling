@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+// Player action state - attack
+// Handles base player attack logic
 public class PlayerAttackState : PlayerBaseState
 {
 	float _damageTime = 0;

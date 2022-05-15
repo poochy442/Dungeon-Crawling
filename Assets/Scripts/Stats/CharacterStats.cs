@@ -8,7 +8,7 @@ public class CharacterStats : MonoBehaviour
     public Stat damage;
 	public Stat armor;
 
-	void Awake()
+	void Start()
 	{
 		currentHealth = maxHealth.GetValue();
 	}

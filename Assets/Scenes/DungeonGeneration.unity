@@ -328,20 +328,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b6be1dbc3824264aa38307cc5f395e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  minRoomLength: 20
-  maxRoomLength: 40
-  roomSpacing: 5
-  maxRoomAmount: 10
-  floorPrefabs:
+  _minRoomLength: 8
+  _maxRoomLength: 20
+  _roomSpacing: 4
+  _maxRoomAmount: 8
+  _floorPrefabs:
   - {fileID: 2626348986270295611, guid: 2def0c63d994f4647b3533e7ec388759, type: 3}
   - {fileID: 2935709680370945214, guid: 1e762c83126060748896ec81b3cb0183, type: 3}
   - {fileID: 2694215261923369038, guid: 4a20a8a5a3d69e64a8b9b27a681c4b6a, type: 3}
-  wallPrefabs:
+  _wallPrefabs:
   - {fileID: 6103745985981278151, guid: 1abec0993b507f445b95ca16b2374cba, type: 3}
   - {fileID: 5267107202885659831, guid: cc3cc38231892d2458156c59baceb861, type: 3}
-  pillarPrefabs:
+  _pillarPrefabs:
   - {fileID: 3969255812338197838, guid: a7aba58ef0ee1f4449eea0ee63fa5e38, type: 3}
-  emptyPrefab: {fileID: 5681008229195735340, guid: 1907dffd18b3f3941a05f59e97d1fa0c, type: 3}
+  _emptyPrefab: {fileID: 6278818671641634299, guid: 8933a4b9d8e0e40428aeaac355851eab, type: 3}
 --- !u!4 &1414033130
 Transform:
   m_ObjectHideFlags: 0
