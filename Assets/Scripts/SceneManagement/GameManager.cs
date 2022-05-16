@@ -15,17 +15,23 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
-	public void EnterDungeon()
-	{
-		SavePlayerStats();
-		LevelLoader.instance.LoadLevel(1);
-	}
-
-	public void ExitDungeon()
+	public void MainMenu()
 	{
 		SavePlayerStats();
 		LevelLoader.instance.LoadLevel(0);
 	}
+
+	public void EnterTown()
+	{
+		SavePlayerStats();
+		LevelLoader.instance.LoadLevel(1);
+	}
+	public void EnterDungeon()
+	{
+		SavePlayerStats();
+		LevelLoader.instance.LoadLevel(2);
+	}
+
 
 	public void SavePlayerStats()
 	{

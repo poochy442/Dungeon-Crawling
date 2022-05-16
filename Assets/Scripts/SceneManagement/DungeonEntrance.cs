@@ -5,6 +5,7 @@ using UnityEngine;
 public class DungeonEntrance : MonoBehaviour
 {
 	GameManager _manager;
+	bool hasEntered = false;
 
 	void Start()
 	{
@@ -14,11 +15,15 @@ public class DungeonEntrance : MonoBehaviour
     // Check if player enters the dungeon, if they do enter scene
     void Update()
     {
-        if(PlayerManager.instance.player != null)
+        if(!hasEntered && PlayerManager.instance.player != null)
 		{
 			float distance = (PlayerManager.instance.player.transform.position - transform.position).magnitude;
 
-			if(distance < 3f) _manager.EnterDungeon();
+			if(distance < 3f)
+			{
+				_manager.EnterDungeon();
+				hasEntered = true;
+			}
 		}
     }
 }

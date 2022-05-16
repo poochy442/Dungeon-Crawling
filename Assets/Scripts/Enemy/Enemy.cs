@@ -5,26 +5,30 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     public float maxHealth = 100f;
-    private float currentHealth;
-    private Animator _animator;
+    float _currentHealth;
+    Animator _animator;
+	CharacterStats _stats;
+
+	public float CurrentHealth { get { return _currentHealth; } }
 
     // Start is called before the first frame update
     void Start()
     {
-        currentHealth = maxHealth;
-        _animator = gameObject.GetComponent<Animator>();
+        _currentHealth = maxHealth;
+        _animator = GetComponent<Animator>();
+		_stats = GetComponent<CharacterStats>();
     }
 
     public void TakeDamage(float damage)
     {
         // Take damage
-        currentHealth -= damage;
+        _currentHealth -= Mathf.Max(damage - _stats.armor.GetValue(), 0);
 
         // Play hurt animation
         _animator.SetTrigger("Hurt");
 
         // Check if dead
-        if(currentHealth <= 0)
+        if(_currentHealth <= 0)
         {
             Die();
         }
@@ -32,6 +36,8 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
+		Debug.Log("Enemy died");
+		
         // Die animation
         _animator.SetBool("IsDead", true);
 
@@ -39,6 +45,7 @@ public class Enemy : MonoBehaviour
         Destroy(gameObject, 4f);
         GetComponent<Rigidbody>().isKinematic = true;
         GetComponent<Collider>().enabled = false;
+		GetComponent<EnemyController>().enabled = false;
         this.enabled = false;
     }
 }

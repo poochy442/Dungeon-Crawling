@@ -40,7 +40,5 @@ public class LevelLoader : MonoBehaviour
 
 			yield return null;
 		}
-
-		yield return null;
 	}
 }

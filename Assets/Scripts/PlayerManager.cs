@@ -25,14 +25,10 @@ public class PlayerManager : MonoBehaviour
 	float _pickupRadius = 3f;
 	IEnumerator _lootTextCoroutine;
 
-	void Start()
-	{
-		player = GameObject.FindGameObjectWithTag("Player");
-		playerStats = player.GetComponent<PlayerStats>();
-	}
-
 	void Update ()
 	{
+		if(player == null) return;
+		
 		// Check for loot in the area and allow the player to pick it up
 		Collider[] hitColliders = Physics.OverlapSphere(player.transform.position, _pickupRadius, lootMask);
 		GameObject closest = null;
@@ -64,6 +60,12 @@ public class PlayerManager : MonoBehaviour
 			playerStats = player.GetComponent<PlayerStats>();
 		}
 		player.transform.position = location;
+	}
+
+	public void SetPlayer(GameObject obj)
+	{
+		player = obj;
+		playerStats = player.GetComponent<PlayerStats>();
 	}
 
 	IEnumerator ResetLootText(Text text, float waitTime)

@@ -131,6 +131,8 @@ public class PlayerStateMachine : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+		PlayerManager.instance.SetPlayer(gameObject);
+
 		if(BSPDungeonGeneration.instance != null)
 		{
 			_characterController.enabled = false;

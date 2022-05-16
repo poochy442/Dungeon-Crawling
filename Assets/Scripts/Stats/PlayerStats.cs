@@ -14,6 +14,7 @@ public class PlayerStats : CharacterStats
 		armor.SetBaseValue(PlayerPrefs.GetFloat("Armor", 0));
 		damage.SetBaseValue(PlayerPrefs.GetFloat("Damage", 4));
 		maxHealth.SetBaseValue(PlayerPrefs.GetFloat("MaxHealth", 100));
+		currentHealth = maxHealth.GetValue();
 		experience = PlayerPrefs.GetFloat("XP", 0);
     }
 

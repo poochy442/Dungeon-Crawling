@@ -5,49 +5,55 @@ using UnityEngine.AI;
 
 public class EnemyController : MonoBehaviour
 {
-	public float lookRadius = 10f, rotationSpeed = 5f, attackAngle = 35f;
+	public float lookRadius = 10f, rotationSpeed = 5f, attackAngle = 35f, attackSpeed = 1f, attackRange = 1f;
 
-	Transform target;
-	NavMeshAgent agent;
-	CharacterStats stats;
+	Transform _target;
+	NavMeshAgent _agent;
+	CharacterStats _stats;
+	Animator _animator;
+	float _nextAttackTime = 0f;
 
     // Start is called before the first frame update
     void Start()
     {
-		target = PlayerManager.instance.player.transform;
-        agent = GetComponent<NavMeshAgent>();
-		stats = GetComponent<CharacterStats>();
+		_target = PlayerManager.instance.player.transform;
+        _agent = GetComponent<NavMeshAgent>();
+		_stats = GetComponent<CharacterStats>();
+		_animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        float distance = Vector3.Distance(target.position, transform.position);
-		Vector3 targetPosition = target.position - (target.position - transform.position).normalized * 0.5f;
+        float distance = Vector3.Distance(_target.position, transform.position);
+		Vector3 targetPosition = _target.position - (_target.position - transform.position).normalized * 0.5f;
 
 		if(distance <= lookRadius)
 		{
-			if(distance <= agent.stoppingDistance)
+			if(distance <= _agent.stoppingDistance)
 			{
-				agent.SetDestination(transform.position);
-
+				_agent.isStopped = true;
 				bool isFacingTarget = FaceTarget();
 
 				// Attack target
-				if(isFacingTarget)
+				if(Time.time > _nextAttackTime && isFacingTarget)
 				{
 					Attack();
 				}
 			} else {
-				agent.SetDestination(targetPosition);
+				_agent.isStopped = false;
+				_agent.SetDestination(targetPosition);
 			}
+		} else
+		{
+			_agent.isStopped = true;
 		}
 
     }
 
 	bool FaceTarget ()
 	{
-		Vector3 direction = (target.position - transform.position).normalized;
+		Vector3 direction = (_target.position - transform.position).normalized;
 		Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
 		transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * rotationSpeed);
 
@@ -59,13 +65,22 @@ public class EnemyController : MonoBehaviour
 
 	void Attack ()
 	{
-
+		_animator.SetTrigger("Attack");
+		float attackTime = 1f / attackSpeed;
+		_nextAttackTime = Time.time + attackTime;
+		StartCoroutine(DoDamage(attackTime * 0.75f));
 	}
 
 	IEnumerator DoDamage (float delay)
 	{
 		yield return new WaitForSeconds(delay);
-		PlayerManager.instance.playerStats.TakeDamage(stats.damage.GetValue());
+		// Detect enemies in range of attack
+        Collider[] hitPlayers = Physics.OverlapSphere(transform.position + (transform.forward * 0.5f), attackRange, LayerMask.GetMask("Player"));
+
+		if(hitPlayers.Length > 0)
+		{
+			PlayerManager.instance.playerStats.TakeDamage(_stats.damage.GetValue());
+		}
 	}
 
 	void OnDrawGizmosSelected()

@@ -37,7 +37,6 @@ public class PlayerAttackState : PlayerBaseState
 
 	public override void UpdateState()
 	{
-		Debug.Log(GetCurrentStatesPrint());
 		if(!hasDamaged && Time.time > _damageTime){
 			HandleAttack();
 			hasDamaged = true;
@@ -109,7 +108,9 @@ public class PlayerAttackState : PlayerBaseState
         // Damage enemies
         foreach (Collider enemy in hitEnemies)
         {
-            enemy.GetComponent<Enemy>().TakeDamage(PlayerManager.instance.playerStats.damage.GetValue());
+			float damageToDo = PlayerManager.instance.playerStats.damage.GetValue();
+			Debug.Log($"Doing {damageToDo} Damage to {enemy.name}");
+            enemy.GetComponent<Enemy>().TakeDamage(damageToDo);
         }
 	}
 }

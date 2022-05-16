@@ -17,7 +17,8 @@ public class Stat
 	public float GetValue()
 	{
 		float finalValue = baseValue;
-		modifiers.ForEach(x => finalValue += x);
+		if(modifiers != null)
+			modifiers.ForEach(x => finalValue += x);
 		return finalValue;
 	}
 
