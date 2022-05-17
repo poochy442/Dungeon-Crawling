@@ -10,12 +10,12 @@
 - Standing 1H Magic Attack
 
 ## Materials
-Leaf: https://3dtextures.me/2017/11/05/leaf-texture-001/
-Tree: https://3dtextures.me/2022/04/18/bark-007/
-Grass: https://3dtextures.me/2018/01/05/grass-001-2/
+- Leaf: https://3dtextures.me/2017/11/05/leaf-texture-001/
+- Tree: https://3dtextures.me/2022/04/18/bark-007/
+- Grass: https://3dtextures.me/2018/01/05/grass-001-2/
 
 ## Icons
-Fireball: https://freesvg.org/fireball-icon
+- Fireball: https://freesvg.org/fireball-icon
 
 # Tutorials
 ## Dungeon Generation
@@ -29,7 +29,7 @@ Fireball: https://freesvg.org/fireball-icon
 - Playlist: https://www.youtube.com/playlist?list=PLwyUzJb_FNeQrIxCEjj5AMPwawsw5beAy
 
 ## Minimap
--Video: https://www.youtube.com/watch?v=28JTTXqMvOU
+- Video: https://www.youtube.com/watch?v=28JTTXqMvOU
 
 # Game Controls
 Movement - WASD / Left analog stick
