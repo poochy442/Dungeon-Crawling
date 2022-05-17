@@ -43,3 +43,6 @@ Inventory - Error when equipping items.
 Dungeon generation - Sometimes fails and drops the player out in nowhere.
 Loading out of dungeon - Sometimes gets stuck loading back in town, only fix is a restart.
 UI not selectable with controller
+
+#Gameplay video link
+https://youtu.be/Si-APwtvejg
