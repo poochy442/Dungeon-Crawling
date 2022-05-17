@@ -43,9 +43,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth:
-    baseValue: 0
+    baseValue: 20
   damage:
-    baseValue: 4
+    baseValue: 3
   armor:
     baseValue: 2
 --- !u!114 &-3927320147373862671
@@ -60,7 +60,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ede56f65c133d2b47a13579b6b0a692a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 100
+  isBoss: 0
+  experienceReward: 10
+  lootObject: {fileID: 3553731008217651798, guid: c351e7ebbef493542b60942a2dd6dc21, type: 3}
 --- !u!195 &299853479272089494
 NavMeshAgent:
   m_ObjectHideFlags: 0

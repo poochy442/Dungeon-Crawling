@@ -63,11 +63,7 @@ public class PlayerAttackState : PlayerBaseState
 
 	public override void InitializeSubState()
 	{
-		if(Ctx.IsMovementPressed){
-			SetSubState(Factory.Walk());
-		} else {
-			SetSubState(Factory.Idle());
-		}
+		SetSubState(Factory.Idle());
 	}
 
     public override void CheckSwitchStates()
@@ -109,7 +105,6 @@ public class PlayerAttackState : PlayerBaseState
         foreach (Collider enemy in hitEnemies)
         {
 			float damageToDo = PlayerManager.instance.playerStats.damage.GetValue();
-			Debug.Log($"Doing {damageToDo} Damage to {enemy.name}");
             enemy.GetComponent<Enemy>().TakeDamage(damageToDo);
         }
 	}

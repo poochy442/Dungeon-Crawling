@@ -15,7 +15,6 @@ public class ItemPickup : Interactable
 
 	void Pickup()
 	{
-		Debug.Log("Picking up " + item.name);
 		Inventory.instance.Add(item);
 		PlayerManager.instance.currentTarget = null;
 		Destroy(gameObject);

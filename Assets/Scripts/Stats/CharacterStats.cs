@@ -15,10 +15,10 @@ public class CharacterStats : MonoBehaviour
 
 	public void TakeDamage (float damage)
 	{
-		damage = Mathf.Max(damage - armor.GetValue(), 0);
+		float actualDamage = Mathf.Max(damage - armor.GetValue(), 0);
 
-		currentHealth -= damage;
-		Debug.Log(transform.name + " takes " + damage + " damage.");
+		currentHealth -= actualDamage;
+		// Debug.Log($"{transform.name} takes {damage} damage, but {actualDamage} after mitigation.");
 
 		if(currentHealth <= 0)
 		{
@@ -29,6 +29,6 @@ public class CharacterStats : MonoBehaviour
 	public virtual void Die ()
 	{
 		// Die in some way, meant to be overwritten
-		Debug.Log(transform.name + " died.");
+		// Debug.Log(transform.name + " died.");
 	}
 }

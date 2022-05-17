@@ -65,6 +65,14 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": """"
+                },
+                {
+                    ""name"": ""Spell"",
+                    ""type"": ""Button"",
+                    ""id"": ""8246587f-dcce-4b3c-9b0a-c19a5c91ae4d"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """"
                 }
             ],
             ""bindings"": [
@@ -287,6 +295,28 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                     ""action"": ""Interact"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e0e1ab84-f982-42b4-bbca-21942ab05cd5"",
+                    ""path"": ""<Gamepad>/rightTrigger"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""Controller"",
+                    ""action"": ""Spell"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""14aa7a64-1b79-4070-b183-aa1871ab49aa"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""KBM"",
+                    ""action"": ""Spell"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -329,6 +359,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         m_Controls_Run = m_Controls.FindAction("Run", throwIfNotFound: true);
         m_Controls_Inventory = m_Controls.FindAction("Inventory", throwIfNotFound: true);
         m_Controls_Interact = m_Controls.FindAction("Interact", throwIfNotFound: true);
+        m_Controls_Spell = m_Controls.FindAction("Spell", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -384,6 +415,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
     private readonly InputAction m_Controls_Run;
     private readonly InputAction m_Controls_Inventory;
     private readonly InputAction m_Controls_Interact;
+    private readonly InputAction m_Controls_Spell;
     public struct ControlsActions
     {
         private @PlayerControls m_Wrapper;
@@ -394,6 +426,7 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         public InputAction @Run => m_Wrapper.m_Controls_Run;
         public InputAction @Inventory => m_Wrapper.m_Controls_Inventory;
         public InputAction @Interact => m_Wrapper.m_Controls_Interact;
+        public InputAction @Spell => m_Wrapper.m_Controls_Spell;
         public InputActionMap Get() { return m_Wrapper.m_Controls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -421,6 +454,9 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Interact.started -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInteract;
                 @Interact.performed -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInteract;
                 @Interact.canceled -= m_Wrapper.m_ControlsActionsCallbackInterface.OnInteract;
+                @Spell.started -= m_Wrapper.m_ControlsActionsCallbackInterface.OnSpell;
+                @Spell.performed -= m_Wrapper.m_ControlsActionsCallbackInterface.OnSpell;
+                @Spell.canceled -= m_Wrapper.m_ControlsActionsCallbackInterface.OnSpell;
             }
             m_Wrapper.m_ControlsActionsCallbackInterface = instance;
             if (instance != null)
@@ -443,6 +479,9 @@ public class @PlayerControls : IInputActionCollection, IDisposable
                 @Interact.started += instance.OnInteract;
                 @Interact.performed += instance.OnInteract;
                 @Interact.canceled += instance.OnInteract;
+                @Spell.started += instance.OnSpell;
+                @Spell.performed += instance.OnSpell;
+                @Spell.canceled += instance.OnSpell;
             }
         }
     }
@@ -473,5 +512,6 @@ public class @PlayerControls : IInputActionCollection, IDisposable
         void OnRun(InputAction.CallbackContext context);
         void OnInventory(InputAction.CallbackContext context);
         void OnInteract(InputAction.CallbackContext context);
+        void OnSpell(InputAction.CallbackContext context);
     }
 }

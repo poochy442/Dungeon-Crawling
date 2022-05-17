@@ -4,17 +4,15 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public float maxHealth = 100f;
-    float _currentHealth;
+	public bool isBoss = false;
+	public float experienceReward = 10f;
+	public GameObject lootObject;
     Animator _animator;
 	CharacterStats _stats;
-
-	public float CurrentHealth { get { return _currentHealth; } }
 
     // Start is called before the first frame update
     void Start()
     {
-        _currentHealth = maxHealth;
         _animator = GetComponent<Animator>();
 		_stats = GetComponent<CharacterStats>();
     }
@@ -22,13 +20,13 @@ public class Enemy : MonoBehaviour
     public void TakeDamage(float damage)
     {
         // Take damage
-        _currentHealth -= Mathf.Max(damage - _stats.armor.GetValue(), 0);
+        _stats.TakeDamage(damage);
 
         // Play hurt animation
         _animator.SetTrigger("Hurt");
 
         // Check if dead
-        if(_currentHealth <= 0)
+        if(_stats.currentHealth <= 0)
         {
             Die();
         }
@@ -36,10 +34,22 @@ public class Enemy : MonoBehaviour
 
     void Die()
     {
-		Debug.Log("Enemy died");
-		
         // Die animation
         _animator.SetBool("IsDead", true);
+
+		PlayerManager.instance.playerStats.GainExperience(experienceReward);
+
+		if(Random.Range(0f, 1f) > 0.8f)
+		{
+			Mutation newMutation = Mutation.GenerateMutation();
+			GameObject loot = GameObject.Instantiate(lootObject, transform.position, Quaternion.identity);
+			loot.GetComponent<ItemPickup>().item = newMutation;
+		}
+
+		if(isBoss)
+		{
+			GameManager.instance.Win();
+		}
 
         // Disable the enemy
         Destroy(gameObject, 4f);

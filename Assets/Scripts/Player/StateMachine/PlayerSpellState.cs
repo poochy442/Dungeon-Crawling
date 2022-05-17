@@ -7,17 +7,8 @@ using UnityEngine.UI;
 // Handles player spell cooldown and casting logic
 public class PlayerSpellState : PlayerBaseState
 {
-	float _damageTime = 0;
-	bool hasDamaged = false;
-	Image cooldownImage;
-	Text cooldownText;
-
-	IEnumerator IAttackResetRoutine()
-	{
-		yield return new WaitForSeconds(1f);
-		Ctx.AttackCount = 0;
-		Ctx.AttackImage.sprite = Ctx.attackSprites[0];
-	}
+	float _castingTime = 0;
+	bool hasCast = false;
 
 	public PlayerSpellState(PlayerStateMachine currentContext, PlayerStateFactory playerStateFactory) : base(currentContext, playerStateFactory){
 		IsRootState = true;
@@ -25,89 +16,54 @@ public class PlayerSpellState : PlayerBaseState
 	}
 	public override void EnterState()
 	{
-		// cooldownImage = Ctx.AttackImage.transform.GetChild(0).GetComponent<Image>();
-		// cooldownImage.type = Image.Type.Filled;
-		// cooldownText = Ctx.AttackImage.GetComponentInChildren<Text>();
-
-		// Ctx.Animator.SetFloat(Ctx.AttackRateHash, Ctx._attackRate);
-		// if(Ctx.currentAttackResetRoutine != null)
-		// 	Ctx.StopCoroutine(Ctx.currentAttackResetRoutine);
-		// BeginAttack();
+		CastSpell();
 	}
 
 	public override void UpdateState()
 	{
-		// if(!hasDamaged && Time.time > _damageTime){
-		// 	HandleAttack();
-		// 	hasDamaged = true;
-		// }
-		// if(Time.time > Ctx.NextAttackTime){
-		// 	cooldownImage.fillAmount = 0;
-		// 	cooldownText.text = "";
-		// } else {
-		// 	var remainingTime = Ctx.NextAttackTime - Time.time;
-		// 	cooldownImage.fillAmount = remainingTime / Ctx._attackDurations[Ctx.AttackCount];
-		// 	cooldownText.text = remainingTime.ToString("F1");
-		// }
-		// CheckSwitchStates();
+		if(!hasCast && Time.time > _castingTime){
+			HandleSpell();
+			hasCast = true;
+		} else if(hasCast)
+		{
+			CheckSwitchStates();
+		}
 	}
 
 	public override void ExitState()
 	{
-		// Ctx.CurrentAttackResetRoutine = Ctx.StartCoroutine(IAttackResetRoutine());
-		// if(Ctx.AttackCount == Ctx.AttackAmount){
-		// 	Ctx.AttackCount = 0;
-		// }
-		// Ctx.Animator.SetBool(Ctx.IsAttackingHash, false);
+		
 	}
 
 	public override void InitializeSubState()
 	{
-		// if(Ctx.IsMovementPressed){
-		// 	SetSubState(Factory.Walk());
-		// } else {
-		// 	SetSubState(Factory.Idle());
-		// }
+		SetSubState(Factory.Idle());
 	}
 
     public override void CheckSwitchStates()
 	{
-		// bool nextAttack = Time.time > Ctx.NextAttackTime;
-		// if (nextAttack && Ctx.IsAttackPressed && !Ctx.IsInteractingWithHud){
-		// 	BeginAttack();
-		// } else if (nextAttack){
-		// 	SwitchState(Factory.Ready());
-		// }
+		bool nextSpell = Time.time > Ctx.NextSpellTime;
+		if (nextSpell && Ctx.IsSpellPressed && !Ctx.IsInteractingWithHud){
+			CastSpell();
+		} else {
+			Ctx.IsAttacking = false;
+			SwitchState(Factory.Ready());
+		}
 	}
 
-	void BeginAttack() {
-		// if(Ctx.AttackCount == Ctx.AttackAmount){
-		// 	Ctx.AttackCount = 1;
-		// } else {
-		// 	Ctx.AttackCount += 1;
-		// }
-		// Ctx.Animator.SetBool(Ctx.IsAttackingHash, true);
-        // Ctx.Animator.SetInteger(Ctx.AttackCountHash, Ctx.AttackCount);
-		// Ctx.NextAttackTime = Time.time + Ctx._attackDurations[Ctx.AttackCount];
+	void CastSpell() {
+		Ctx.Animator.SetTrigger(Ctx.IsCastingHash);
+		Ctx.NextSpellTime = Time.time + Ctx._spellCooldown;
 
-		// // Setup damage timer
-		// _damageTime = Time.time + Ctx._attackTimings[Ctx.AttackCount];
-		// hasDamaged = false;
-
-		// // Set attack sprite
-		// int i = Ctx.AttackCount >= Ctx.AttackAmount ? 0 : Ctx.AttackCount;
-		// Ctx.AttackImage.sprite = Ctx.attackSprites[i];
+		// Setup casting timer
+		_castingTime = Time.time + (1 / Ctx._castSpeed);
+		hasCast = false;
+		Ctx.IsAttacking = true;
 	}
 
-	void HandleAttack() {
-		// Detect enemies in range of attack
-        // TODO: Delay detection for animation trigger
-        // Collider[] hitEnemies = Physics.OverlapSphere(Ctx.attackPoint.position, Ctx._attackRange, Ctx._enemyMask);
-
-        // Damage enemies
-        // foreach (Collider enemy in hitEnemies)
-        // {
-        //     enemy.GetComponent<Enemy>().TakeDamage(Ctx._attackDamage);
-        // }
+	void HandleSpell() {
+		Vector3 offset = Ctx.transform.forward + new Vector3(0, 1, 0);
+		GameObject f = GameObject.Instantiate(Ctx.Fireball, Ctx.transform.position + offset, Quaternion.identity);
+		f.transform.forward = Ctx.transform.forward;
 	}
 }

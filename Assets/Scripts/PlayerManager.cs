@@ -19,7 +19,7 @@ public class PlayerManager : MonoBehaviour
 
 	public LayerMask lootMask, playerMask, enemyMask;
 	public GameObject player;
-	public Interactable currentTarget;
+	public ItemPickup currentTarget;
 	public PlayerStats playerStats;
 
 	float _pickupRadius = 3f;
@@ -34,16 +34,16 @@ public class PlayerManager : MonoBehaviour
 		GameObject closest = null;
 		foreach(Collider hit in hitColliders)
 		{
-			closest = hit.gameObject;
+			if(closest == null || (hit.gameObject.transform.position - transform.position).magnitude > (closest.transform.position - transform.position).magnitude)
+				closest = hit.gameObject;
 		}
 
 		if(closest != null)
 		{
 			currentTarget = closest.GetComponent<ItemPickup>();
 
-			// TODO: Change to loot name
 			Text text = closest.GetComponentInChildren<Text>();
-			text.text = currentTarget.name;
+			text.text = currentTarget.item.name;
 
 			if(_lootTextCoroutine != null) StopCoroutine(_lootTextCoroutine);
 
@@ -66,6 +66,12 @@ public class PlayerManager : MonoBehaviour
 	{
 		player = obj;
 		playerStats = player.GetComponent<PlayerStats>();
+	}
+
+	public void TakeDamage(float damage)
+	{
+		player.GetComponent<Animator>().SetTrigger("IsHurt");
+		playerStats.TakeDamage(damage);
 	}
 
 	IEnumerator ResetLootText(Text text, float waitTime)

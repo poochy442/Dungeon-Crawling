@@ -43,6 +43,9 @@ public class EnemyController : MonoBehaviour
 			} else {
 				_agent.isStopped = false;
 				_agent.SetDestination(targetPosition);
+
+				_animator.SetFloat("VelocityFront", Vector3.Dot(transform.forward, _agent.velocity.normalized), 0.075f, Time.deltaTime);
+				_animator.SetFloat("VelocitySide", Vector3.Dot(transform.right, _agent.velocity.normalized), 0.075f, Time.deltaTime);
 			}
 		} else
 		{
@@ -79,7 +82,7 @@ public class EnemyController : MonoBehaviour
 
 		if(hitPlayers.Length > 0)
 		{
-			PlayerManager.instance.playerStats.TakeDamage(_stats.damage.GetValue());
+			PlayerManager.instance.TakeDamage(_stats.damage.GetValue());
 		}
 	}
 

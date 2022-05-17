@@ -35,4 +35,9 @@ public class InventoryUI : MonoBehaviour
 			}
 		}
 	}
+
+	void OnDisable()
+	{
+		Inventory.instance.onItemChangedCallback -= UpdateUI;
+	}
 }

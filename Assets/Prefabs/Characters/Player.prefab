@@ -49,6 +49,9 @@ MonoBehaviour:
   _attackRate: 2
   _attackDamage: 40
   _attackRange: 2
+  _spellCooldown: 10
+  _castSpeed: 2
+  _fireball: {fileID: 1775414626575466168, guid: 4259719b25e982144bb0d52a6965288a, type: 3}
   attackSprites:
   - {fileID: 21300000, guid: fdaaa50754224e54f8c37b063ad19eba, type: 3}
   - {fileID: 21300000, guid: 1685b78e6fc66a146837d113474a90a8, type: 3}
@@ -67,10 +70,13 @@ MonoBehaviour:
   maxHealth:
     baseValue: 100
   damage:
-    baseValue: 5
+    baseValue: 8
   armor:
-    baseValue: 2
+    baseValue: 3
   experience: 0
+  level: 0
+  spellDamage:
+    baseValue: 10
 --- !u!1 &8610792898957522284
 GameObject:
   m_ObjectHideFlags: 0

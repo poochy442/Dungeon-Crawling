@@ -16,7 +16,7 @@ public class PlayerStateMachine : MonoBehaviour
     Camera _camera;
 
     // Hashes for animation getting/setting
-    int _isWalkingHash, _isRunningHash, _isAttackingHash, _attackCountHash, _forwardMovementHash, _sideMovementHash, _attackRateHash;
+    int _isWalkingHash, _isRunningHash, _isAttackingHash, _attackCountHash, _isCastingHash, _forwardMovementHash, _sideMovementHash, _attackRateHash;
 
     // Constants
     public float _rotationSpeed = 15.0f;
@@ -40,7 +40,12 @@ public class PlayerStateMachine : MonoBehaviour
     public Coroutine currentAttackResetRoutine = null;
 
 	// Spell variables
-
+	public float _spellCooldown = 10f, _castSpeed = 0.5f;
+	float _nextSpellTime = 0f;
+	bool _isCasting = false;
+	Image _spellCooldownImage;
+	Text _spellCooldownText;
+	public GameObject _fireball;
 
     // State variables
     PlayerBaseState _currentState;
@@ -49,6 +54,7 @@ public class PlayerStateMachine : MonoBehaviour
 	// HUD Variables
 	public Sprite[] attackSprites;
 	private Image _attackImage;
+	private Image _spellImage;
 	private bool _isInteractingWithHud;
 
 	// Getters and Setters
@@ -61,6 +67,7 @@ public class PlayerStateMachine : MonoBehaviour
 	public bool IsLookPressed { get { return InputManager.instance ? InputManager.instance.IsLookPressed : false; }}
 	public bool IsRunPressed { get { return InputManager.instance ? InputManager.instance.IsRunPressed : false; }}
 	public bool IsAttackPressed { get { return InputManager.instance ? InputManager.instance.IsAttackPressed : false; }}
+	public bool IsSpellPressed { get { return InputManager.instance ? InputManager.instance.IsSpellPressed : false; }}
 	public bool IsAttacking {get { return _isAttacking; } set { _isAttacking = value; }}
 	public int AttackCount { get { return _attackCount; } set { _attackCount = value; }}
 	public int AttackRateHash {get { return _attackRateHash; }}
@@ -70,12 +77,17 @@ public class PlayerStateMachine : MonoBehaviour
 	public int IsWalkingHash {get { return _isWalkingHash; }}
 	public int IsRunningHash {get { return _isRunningHash; }}
 	public int IsAttackingHash {get { return _isAttackingHash; }}
+	public int IsCastingHash {get { return _isCastingHash; }}
 	public float AppliedMovementX { get { return _appliedMovement.x; } set { _appliedMovement.x = value; }}
 	public float AppliedMovementZ { get { return _appliedMovement.z; } set { _appliedMovement.z = value; }}
 	public float RunMultiplier { get { return _runMultiplier; }}
 	public float NextAttackTime { get { return _nextAttackTime; } set { _nextAttackTime = value; }}
+	public float NextSpellTime { get { return _nextSpellTime; } set { _nextSpellTime = value; }}
 	public int AttackAmount { get { return _attackDurations.Keys.Count; }}
 	public Image AttackImage {get { return _attackImage; } set { _attackImage = value; }}
+	public Image SpellImage {get { return _spellImage; } set { _spellImage = value; }}
+	public Text SpellText {get { return _spellCooldownText; } set { _spellCooldownText = value; }}
+	public GameObject Fireball { get { return _fireball; }}
 	public bool IsInteractingWithHud { get { return _isInteractingWithHud;}}
 
     void Awake()
@@ -92,12 +104,14 @@ public class PlayerStateMachine : MonoBehaviour
 
 		// Setup HUD
 		_attackImage = GameObject.Find("AttackImage").GetComponent<Image>();
+		_spellImage = GameObject.Find("SpellImage").GetComponent<Image>();
 
         // Set the hash references
         _isWalkingHash = Animator.StringToHash("IsWalking");
         _isRunningHash = Animator.StringToHash("IsRunning");
         _isAttackingHash = Animator.StringToHash("IsAttacking");
 		_attackCountHash = Animator.StringToHash("AttackCount");
+		_isCastingHash = Animator.StringToHash("IsCasting");
 		_forwardMovementHash = Animator.StringToHash("MovementForward");
 		_sideMovementHash = Animator.StringToHash("MovementSide");
 		_attackRateHash = Animator.StringToHash("AttackRate");
@@ -125,7 +139,7 @@ public class PlayerStateMachine : MonoBehaviour
 	// Initialize spell variables
 	void SetupSpells()
 	{
-
+		_nextSpellTime = Time.time;
 	}
 
     // Start is called before the first frame update
@@ -139,11 +153,21 @@ public class PlayerStateMachine : MonoBehaviour
 			PlayerManager.instance.MovePlayer(BSPDungeonGeneration.instance.PlayerSpawn);
 			_characterController.enabled = true;
 		}
+
+		_spellCooldownImage = _spellImage.transform.GetChild(0).GetComponent<Image>();
+		_spellCooldownImage.type = Image.Type.Filled;
+		_spellCooldownText = _spellImage.GetComponentInChildren<Text>();
     }
 
     // Update is called once per frame
     void Update()
     {
+		// Check if fell through terrain
+		if(transform.position.y < -5)
+		{
+			GameManager.instance.Lose();
+		}
+
 		// Check if the user is interacting with the HUD
 		if(InputManager.instance.CurrentControl == ControlType.KeyboardMouse){
 			if(EventSystem.current.IsPointerOverGameObject())
@@ -175,10 +199,18 @@ public class PlayerStateMachine : MonoBehaviour
         _characterController.SimpleMove(_moveSpeed * _appliedMovement);
 
 		// Handle interaction
-		if(InputManager.instance.IsInteractPressed && !(PlayerManager.instance.currentTarget == null))
+		if(InputManager.instance.IsInteractPressed && PlayerManager.instance.currentTarget != null)
 		{
 			PlayerManager.instance.currentTarget.Interact();
 		}
+
+		// Update spell cooldown
+		float remainingTime = Mathf.Max(_nextSpellTime - Time.time, 0);
+		_spellCooldownImage.fillAmount = remainingTime / _spellCooldown;
+		if(remainingTime <= 0)
+			SpellText.text = "";
+		else
+			SpellText.text = remainingTime.ToString("F1");
     }
 
 	// Handles the rotation of the character
@@ -187,7 +219,9 @@ public class PlayerStateMachine : MonoBehaviour
 		if(InputManager.instance.CurrentControl == ControlType.Controller && IsLookPressed){
 			if(CurrentLookInput.magnitude < 0.05f)
 				return;
-			Vector3 positionToLookAt = transform.position + new Vector3(CurrentLookInput.x, 0, CurrentLookInput.y) * 100;
+			
+			// Debug.Log($"Controller look: x {CurrentLookInput.x}, y {CurrentLookInput.y}");
+			Vector3 positionToLookAt = transform.position + new Vector3(CurrentLookInput.x * 100, 0, CurrentLookInput.y * 100);
 			positionToLookAt.y = 0;
 
 			Quaternion targetRotation = Quaternion.LookRotation(positionToLookAt);

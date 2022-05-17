@@ -35,7 +35,7 @@ public class EnemySpawner : MonoBehaviour
 		if(boss)
 		{
 			Vector3 bossPosition = new Vector3(room.RoomObject.transform.position.x, 0.5f, room.RoomObject.transform.position.z);
-			GameObject.Instantiate(enemies[Random.Range(0, enemies.Count)], bossPosition, Quaternion.identity);
+			GameObject.Instantiate(bosses[Random.Range(0, bosses.Count)], bossPosition, Quaternion.identity);
 			usedPositions.Add(bossPosition);
 			groupCounter--;
 		}
@@ -61,7 +61,7 @@ public class EnemySpawner : MonoBehaviour
 			{
 				Vector3 enemyPosition = groupLocation + (Quaternion.AngleAxis((360 / enemiesToSpawn) * i, Vector3.up) * room.RoomObject.transform.forward);
 				GameObject.Instantiate(enemies[Random.Range(0, enemies.Count)], enemyPosition, Quaternion.identity);
-				Debug.Log($"Enemy spawned at: {enemyPosition}");
+				// Debug.Log($"Enemy spawned at: {enemyPosition}");
 			}
 			groupCounter--;
 		}

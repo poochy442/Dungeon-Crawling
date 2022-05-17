@@ -40,6 +40,9 @@ public class PlayerReadyState : PlayerBaseState
 	{
 		if(Ctx.IsAttackPressed && !Ctx.IsInteractingWithHud){
 			SwitchState(Factory.Attack());
+		} else if(Ctx.IsSpellPressed && Time.time > Ctx.NextSpellTime && !Ctx.IsInteractingWithHud)
+		{
+			SwitchState(Factory.Spell());
 		}
 	}
 }

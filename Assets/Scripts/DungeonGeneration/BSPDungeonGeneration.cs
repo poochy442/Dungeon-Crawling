@@ -99,6 +99,13 @@ public class BSPDungeonGeneration : MonoBehaviour
 		_rooms = CreateRooms();
 		_corridors = CreateCorridors();
 
+		if(_rooms.Count <= 2) // Guard to ensure the dungeon was correctly spawned
+		{
+			// Debug.Log($"{_rooms.Count} <= 2");
+			// Debug.Log($"{_corridors.Count + 10} = {_rooms.Count}");
+			GameManager.instance.EnterDungeon();
+		}
+
 		_dijkstraMap = new DijkstraMap(_playerSpawn, _rooms);
 
 		_dungeon.transform.localScale = new Vector3(4, 4, 4);

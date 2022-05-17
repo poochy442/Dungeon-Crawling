@@ -27,6 +27,7 @@ public class InputManager : MonoBehaviour
 	public Vector2 CurrentMovementInput {get; private set;}
 	public bool IsRunPressed {get; private set;}
 	public bool IsAttackPressed {get; private set;}
+	public bool IsSpellPressed {get; private set;}
 	public bool IsLookPressed {get; private set;}
 	public bool IsInteractPressed {get; private set;}
 	public Vector2 CurrentLookInput {get; private set;}
@@ -66,6 +67,10 @@ public class InputManager : MonoBehaviour
 		// Setup attack
 		_playerControls.Controls.Attack.started += ctx => onAttackStarted(ctx);
 		_playerControls.Controls.Attack.canceled += ctx => onAttackCanceled();
+
+		// Setup attack
+		_playerControls.Controls.Spell.started += ctx => onSpellStarted(ctx);
+		_playerControls.Controls.Spell.canceled += ctx => onSpellCanceled();
 
 		// Setup interaction
 		_playerControls.Controls.Interact.started += ctx => onInteractStarted(ctx);
@@ -133,6 +138,16 @@ public class InputManager : MonoBehaviour
 	}
 	void onAttackCanceled(){
 		IsAttackPressed = false;
+	}
+
+	// Spell handlers
+	void onSpellStarted(InputAction.CallbackContext context){
+		checkDevice(context.action.activeControl.device.name);
+		
+		IsSpellPressed = true;
+	}
+	void onSpellCanceled(){
+		IsSpellPressed = false;
 	}
 
 	// Interact handlers

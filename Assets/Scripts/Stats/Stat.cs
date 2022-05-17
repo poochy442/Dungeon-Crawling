@@ -33,6 +33,9 @@ public class Stat
 
 	public void AddModifier(float modifier)
 	{
+		if(modifiers == null)
+			modifiers = new List<float>();
+		
 		if(modifier != 0)
 			modifiers.Add(modifier);
 	}
